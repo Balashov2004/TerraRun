@@ -1,23 +1,42 @@
-﻿namespace TerraRun;
+﻿
+using TerraRun.Pages;
+using TerraRun.Services;
 
-public partial class MainPage : ContentPage
+namespace TerraRun;
+
+public partial class MainPage
 {
-	int count = 0;
+    private readonly AuthService _authService;
+    
+    public MainPage()
+    {
+        InitializeComponent();
+        _authService = new AuthService();
+    }
+    
+    private async void OnGoToRegisterClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new RegisterPage());
+    }
 
-	public MainPage()
-	{
-		InitializeComponent();
-	}
+    private async void OnLoginClicked(object sender, EventArgs e)
+    {
+        if (string.IsNullOrEmpty(LoginUsername.Text) || string.IsNullOrEmpty(LoginPassword.Text))
+        {
+            await DisplayAlert("Ошибка", "Введите логин и пароль", "ОК");
+            return;
+        }
 
-	private void OnCounterClicked(object? sender, EventArgs e)
-	{
-		count++;
-
-		if (count == 1)
-			CounterBtn.Text = $"Clicked {count} time";
-		else
-			CounterBtn.Text = $"Clicked {count} times";
-
-		SemanticScreenReader.Announce(CounterBtn.Text);
-	}
+        var success = await _authService.Login(LoginUsername.Text, LoginPassword.Text);
+        if (success != null)
+        {
+            UserSession.LoggedInUserId = success.Id;
+            UserSession.UserName = success.Name;
+            await Navigation.PushAsync(new MapPage());
+        }
+        else
+        {
+            await DisplayAlert("Упс", "Неверный логин или пароль", "ОК");
+        }
+    }
 }

@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
+             x:Class="TerraRun.Pages.MapPage"
+             Title="Карта пробежки"
+             NavigationPage.HasNavigationBar="False">
+
+    <Grid>
+        <mapsui:MapView x:Name="MapView" 
+                        VerticalOptions="Fill" 
+                        HorizontalOptions="Fill" />
+
+        <Grid Padding="20" RowDefinitions="Auto, *, Auto">
+        
+            <HorizontalStackLayout Grid.Row="0" HorizontalOptions="End" Spacing="10">
+                <Button Text="⚙️" BackgroundColor="White" TextColor="Black" 
+                        CornerRadius="25" HeightRequest="50" WidthRequest="50" />
+            </HorizontalStackLayout>
+
+            <VerticalStackLayout Grid.Row="2" Spacing="15">
+                <Button x:Name="RunButton" 
+                        Clicked="OnRunButtonClicked" 
+                        Text="Начать пробежку" 
+                        BackgroundColor="Orange" 
+                        TextColor="White"
+                        FontAttributes="Bold" 
+                        FontSize="20" 
+                        CornerRadius="30" 
+                        HeightRequest="70" />
+            </VerticalStackLayout>
+        </Grid>
+    </Grid>
+</ContentPage>

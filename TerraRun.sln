@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerraRun", "TerraRun\TerraRun.csproj", "{816031AC-2D57-4C80-9A52-5D4663C3EDF7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerraRun.Api", "TerraRun.Api\TerraRun.Api.csproj", "{80A44777-A8BD-439A-92BF-B634049FE5CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{816031AC-2D57-4C80-9A52-5D4663C3EDF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{816031AC-2D57-4C80-9A52-5D4663C3EDF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{816031AC-2D57-4C80-9A52-5D4663C3EDF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80A44777-A8BD-439A-92BF-B634049FE5CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80A44777-A8BD-439A-92BF-B634049FE5CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80A44777-A8BD-439A-92BF-B634049FE5CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80A44777-A8BD-439A-92BF-B634049FE5CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
