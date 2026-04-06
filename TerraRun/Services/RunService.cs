@@ -55,11 +55,31 @@ public class RunService
         }
         return null;
     }
+
+    public async Task<List<CapturedCellDto>> GetAllCapturedCells()
+    {
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<List<CapturedCellDto>>($"{BaseUrl}captured-cells");
+            return response ?? new List<CapturedCellDto>();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error fetching all cells: {ex.Message}");
+            return new List<CapturedCellDto>();
+        }
+    }
 }
 
 public record CaptureResponse(string CellId, int Owner, List<BoundaryPoint> Boundary);
 
 public record BoundaryPoint(double Lat, double Lon);
+
+public class CapturedCellDto
+{
+    public int OwnerUserId { get; set; }
+    public List<BoundaryPoint> Boundary { get; set; }
+}
 
 
 

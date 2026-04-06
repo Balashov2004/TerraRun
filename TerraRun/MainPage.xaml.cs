@@ -31,7 +31,8 @@ public partial class MainPage
         if (success != null)
         {
             UserSession.LoggedInUserId = success.Id;
-            UserSession.UserName = success.Name;
+            UserSession.UserName = success.UserName;
+            UserSession.UserEmail = success.Email;
             await Navigation.PushAsync(new MapPage());
         }
         else

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TerraRun.Pages.ProfilePage"
+             Title="Профиль пользователя"
+             BackgroundColor="#F5F5F5">
+
+    <VerticalStackLayout Spacing="25" Padding="30" VerticalOptions="Center">
+        
+        <Frame CornerRadius="50" 
+               HeightRequest="100" 
+               WidthRequest="100" 
+               HorizontalOptions="Center" 
+               Padding="0" 
+               IsClippedToBounds="True"
+               BackgroundColor="Orange">
+            <Label Text="👤" FontSize="50" HorizontalOptions="Center" VerticalOptions="Center" />
+        </Frame>
+
+        <VerticalStackLayout Spacing="10">
+            <Label Text="Имя пользователя:" FontSize="14" TextColor="Gray" />
+            <Label x:Name="UserNameLabel" FontSize="20" FontAttributes="Bold" Text="Загрузка..." />
+            
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="Электронная почта:" FontSize="14" TextColor="Gray" Margin="0,10,0,0" />
+            <Label x:Name="EmailLabel" FontSize="18" Text="Загрузка..." />
+        </VerticalStackLayout>
+
+        <Button Text="Выйти из аккаунта" 
+                Clicked="OnLogoutClicked" 
+                BackgroundColor="Red" 
+                TextColor="White" 
+                Margin="0,30,0,0" />
+
+    </VerticalStackLayout>
+</ContentPage>

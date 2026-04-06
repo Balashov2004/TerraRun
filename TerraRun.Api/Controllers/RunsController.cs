@@ -2,6 +2,7 @@
 using H3.Extensions;
 using H3.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TerraRun.Api.Data;
 using TerraRun.Api.DTO;
 using TerraRun.Api.Models;
@@ -59,7 +60,6 @@ public class RunsController : ControllerBase
     [HttpPost("{runId}/capture")]
     public async Task<IActionResult> CapturePoint(int runId, [FromBody] RunDto dto)
     {
-        Console.WriteLine($"[API] Пришло от клиента: Lat={dto.Latitude}, Lon={dto.Longitude}");
         var latRad = dto.Latitude * (Math.PI / 180.0);
         var lonRad = dto.Longitude * (Math.PI / 180.0);
         var point = new GeoCoord(latRad, lonRad);
@@ -71,9 +71,6 @@ public class RunsController : ControllerBase
                 lon = v.Longitude * (180.0 / Math.PI), 
             })
             .ToList();
-        
-        var first = boundary.First();
-        Console.WriteLine($"[API FINAL CHECK] Вход: {dto.Latitude} -> Выход границы: {first.lat}");
 
         var run = await _context.Runs.FindAsync(runId);
         if (run == null) return NotFound("Run not found");
@@ -95,9 +92,35 @@ public class RunsController : ControllerBase
             cell.OwnerUserId = userId;
             cell.CapturedAt = DateTime.UtcNow;
         }
-        Console.WriteLine($"[API DEBUG] Input: {dto.Latitude}, {dto.Longitude} -> H3Index: {h3IndexString}");
 
         await _context.SaveChangesAsync();
         return Ok(new { CellId = h3IndexString, Owner = userId, Boundary = boundary });
+    }
+    
+    [HttpGet("captured-cells")] 
+    public async Task<IActionResult> GetAllCells()
+    { 
+        var cellsFromDb = await _context.CapturedCells
+            .Select(c => new { c.H3Index, c.OwnerUserId })
+            .ToListAsync();
+        
+        var result = cellsFromDb.Select(c => new {
+            CellId = c.H3Index,
+            OwnerUserId = c.OwnerUserId,
+            Boundary = GetBoundaryForIndex(c.H3Index)
+        }).ToList();
+
+        return Ok(result);
+    }
+    
+    private List<object> GetBoundaryForIndex(string h3IndexString)
+    {
+        var indexObj = new H3Index(h3IndexString);
+        return indexObj.GetCellBoundaryVertices()
+            .Select(v => new { 
+                lat = v.Latitude * (180.0 / Math.PI),
+                lon = v.Longitude * (180.0 / Math.PI), 
+            })
+            .ToList<object>();
     }
 }
