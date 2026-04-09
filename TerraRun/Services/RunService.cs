@@ -45,7 +45,6 @@ public class RunService
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<CaptureResponse>();
-                System.Diagnostics.Debug.WriteLine($"[SERVICE] Получено точек границы: {result?.Boundary?.Count ?? 0}");
                 return result;
             }
         }
@@ -69,6 +68,19 @@ public class RunService
             return new List<CapturedCellDto>();
         }
     }
+
+    public async Task<UserStatsDto?> GetStats(int userId)
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<UserStatsDto>($"{BaseUrl}stats/{userId}");
+        }
+        catch (Exception e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[SERVICE ERROR] {e.Message}");
+        }
+        return null;
+    }
 }
 
 public record CaptureResponse(string CellId, int Owner, List<BoundaryPoint> Boundary);
@@ -80,7 +92,10 @@ public class CapturedCellDto
     public int OwnerUserId { get; set; }
     public List<BoundaryPoint> Boundary { get; set; }
 }
-
+public class UserStatsDto {
+    public int CellsCount { get; set; }
+    public double TotalAreaMeters { get; set; }
+}
 
 
 

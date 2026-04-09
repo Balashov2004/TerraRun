@@ -5,7 +5,6 @@ using Mapsui.Styles;
 using NetTopologySuite.Geometries;
 using Color = Mapsui.Styles.Color;
 
-
 namespace TerraRun.Pages;
 
 public partial class MapPage
@@ -14,6 +13,7 @@ public partial class MapPage
     private int? _currentRunId;
     private readonly RunService _runService = new();
     private readonly Mapsui.Layers.WritableLayer _routeLayer = new();
+
     public MapPage()
     {
         InitializeComponent();
@@ -23,11 +23,13 @@ public partial class MapPage
             var tileLayer = OpenStreetMap.CreateTileLayer();
             MapView.Map.Layers.Add(tileLayer);
             MapView.Map.Layers.Add(_routeLayer);
+            
             MapView.Map.Navigator.ZoomToLevel(15);
             MapView.MyLocationLayer.Enabled = true;
+            
             RequestLocation();
-            await LoadAllCapturedCells();
-
+            await RefreshMapCells();
+            
             _ = Task.Run(() => ContinuousLocationUpdate());
         });
     }
@@ -41,21 +43,24 @@ public partial class MapPage
                 var location = await Geolocation.Default.GetLocationAsync(
                     new GeolocationRequest(GeolocationAccuracy.High));
 
-                MainThread.BeginInvokeOnMainThread(() =>
+                if (location != null)
                 {
-                    MapView.MyLocationLayer.UpdateMyLocation(
-                        new Mapsui.UI.Maui.Position(location.Latitude, location.Longitude));
-                    var sm = Mapsui.Projections.SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
-                    MapView.Map.Navigator.CenterOn(sm.x, sm.y);
-                });
-
-                if (_isTracking && _currentRunId.HasValue)
-                {
-                    var response =
-                        await _runService.CaptureCell(_currentRunId.Value, location.Latitude, location.Longitude);
-                    if (response?.Boundary != null)
+                    MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        MainThread.BeginInvokeOnMainThread(() => { DrawServerBoundary(response.Boundary, Color.Green); });
+                        MapView.MyLocationLayer.UpdateMyLocation(
+                            new Mapsui.UI.Maui.Position(location.Latitude, location.Longitude));
+                        
+                        var sm = Mapsui.Projections.SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
+                        MapView.Map.Navigator.CenterOn(sm.x, sm.y);
+                    });
+
+                    if (_isTracking && _currentRunId.HasValue)
+                    {
+                        var response = await _runService.CaptureCell(_currentRunId.Value, location.Latitude, location.Longitude);
+                        if (response?.Boundary != null)
+                        {
+                            await RefreshMapCells();
+                        }
                     }
                 }
             }
@@ -68,17 +73,76 @@ public partial class MapPage
         }
     }
 
+    private async Task RefreshMapCells()
+    {
+        try
+        {
+            var allCells = await _runService.GetAllCapturedCells();
+            if (allCells == null) return;
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                _routeLayer.Clear();
+
+                foreach (var cell in allCells)
+                {
+                    var cellColor = (cell.OwnerUserId == UserSession.LoggedInUserId) 
+                        ? Color.Green 
+                        : Color.Red;
+
+                    AddCellToLayer(cell.Boundary, cellColor);
+                }
+                _routeLayer.DataHasChanged();
+            });
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error refreshing cells: {ex.Message}");
+        }
+    }
+    
+    private void AddCellToLayer(List<BoundaryPoint> boundary, Color cellColor)
+    {
+        if (boundary == null || boundary.Count < 3) return;
+
+        try
+        {
+            var points = boundary
+                .Select(p => Mapsui.Projections.SphericalMercator.FromLonLat(p.Lon, p.Lat))
+                .Select(pr => new Coordinate(pr.x, pr.y))
+                .ToList();
+            
+            if (points[0] != points[^1]) 
+                points.Add(new Coordinate(points[0].X, points[0].Y));
+
+            var feature = new GeometryFeature
+            {
+                Geometry = new Polygon(new LinearRing(points.ToArray()))
+            };
+
+            feature.Styles.Add(new VectorStyle
+            {
+                Fill = new Mapsui.Styles.Brush(cellColor),
+                Outline = new Pen(Color.Orange, 1)
+            });
+
+            _routeLayer.Add(feature);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Feature Add Error: {ex.Message}");
+        }
+    }
 
     private async Task RequestLocation()
     {
         var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
-
-        if (status == PermissionStatus.Granted)
+        if (status != PermissionStatus.Granted)
         {
-            await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
         }
 
-        else
+        if (status != PermissionStatus.Granted)
         {
             await DisplayAlert("Ошибка", "Без GPS мы не работаем", "ОК");
         }
@@ -112,65 +176,6 @@ public partial class MapPage
         }
     }
 
-    private void DrawServerBoundary(List<BoundaryPoint> boundary, Color cellColor)
-    {
-        try
-        {
-            var projectedCoordinates = boundary.Select(p =>
-            {
-                var projected = Mapsui.Projections.SphericalMercator.FromLonLat(p.Lon, p.Lat);
-                return new Coordinate(projected.x, projected.y);
-            }).ToList();
-            projectedCoordinates.Add(new Coordinate(projectedCoordinates[0].X, projectedCoordinates[0].Y));
-
-            var feature = new GeometryFeature
-            {
-                Geometry = new Polygon(new LinearRing(projectedCoordinates.ToArray()))
-            };
-
-            feature.Styles.Add(new VectorStyle
-            {
-                Fill = new Mapsui.Styles.Brush(cellColor),
-                Outline = new Pen(Color.Orange, 2)
-            });
-
-            _routeLayer.Add(feature);
-            _routeLayer.DataHasChanged();
-            MapView.RefreshGraphics();
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Render Error: {ex.Message}");
-        }
-    }
-    
-    
-    private async Task LoadAllCapturedCells()
-    {
-        try
-        {
-            var allCells = await _runService.GetAllCapturedCells();
-        
-            if (allCells == null) return;
-
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                foreach (var cell in allCells)
-                {
-                    var cellColor = (cell.OwnerUserId == UserSession.LoggedInUserId) 
-                        ? Color.Green
-                        : Color.Red;
-
-                    DrawServerBoundary(cell.Boundary, cellColor);
-                }
-            });
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error loading world: {ex.Message}");
-        }
-    }
-    
     private async void OnProfileClicked(object sender, EventArgs e)
     {
         await Shell.Current.GoToAsync(nameof(ProfilePage));

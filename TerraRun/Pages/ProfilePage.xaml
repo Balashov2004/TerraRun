@@ -16,6 +16,22 @@
                BackgroundColor="Orange">
             <Label Text="👤" FontSize="50" HorizontalOptions="Center" VerticalOptions="Center" />
         </Frame>
+        
+        <Frame BackgroundColor="White" CornerRadius="15" Margin="0,10,0,0">
+            <HorizontalStackLayout Spacing="20" HorizontalOptions="Center">
+                <VerticalStackLayout HorizontalOptions="Center">
+                    <Label Text="Ячеек" FontSize="12" TextColor="Gray" HorizontalTextAlignment="Center"/>
+                    <Label x:Name="CellsCountLabel" Text="0" FontSize="20" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                </VerticalStackLayout>
+        
+                <BoxView WidthRequest="1" Color="LightGray" VerticalOptions="Fill"/>
+
+                <VerticalStackLayout HorizontalOptions="Center">
+                    <Label Text="Площадь (м²)" FontSize="12" TextColor="Gray" HorizontalTextAlignment="Center"/>
+                    <Label x:Name="AreaLabel" Text="0" FontSize="20" FontAttributes="Bold" HorizontalTextAlignment="Center" TextColor="Green"/>
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+        </Frame>
 
         <VerticalStackLayout Spacing="10">
             <Label Text="Имя пользователя:" FontSize="14" TextColor="Gray" />

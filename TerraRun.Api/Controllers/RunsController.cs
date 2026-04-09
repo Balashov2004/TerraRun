@@ -106,7 +106,7 @@ public class RunsController : ControllerBase
         
         var result = cellsFromDb.Select(c => new {
             CellId = c.H3Index,
-            OwnerUserId = c.OwnerUserId,
+            c.OwnerUserId,
             Boundary = GetBoundaryForIndex(c.H3Index)
         }).ToList();
 
@@ -122,5 +122,17 @@ public class RunsController : ControllerBase
                 lon = v.Longitude * (180.0 / Math.PI), 
             })
             .ToList<object>();
+    }
+
+    [HttpGet("stats/{userId}")]
+    public async Task<IActionResult> GetStats(int userId)
+    {
+        var cellsCount = await _context.CapturedCells
+            .CountAsync(c => c.OwnerUserId == userId);
+        var areaCell = H3Index.FromLatLng(new GeoCoord(45, 38), 12).CellAreaInMSquared();
+        var totalArea = areaCell * cellsCount;
+        return Ok(new {
+            CellsCount = cellsCount, 
+            TotalAreaMeters = totalArea });
     }
 }
