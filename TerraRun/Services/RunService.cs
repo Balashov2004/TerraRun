@@ -1,22 +1,23 @@
 ﻿using System.Net.Http.Json;
+using TerraRun.Models;
 
 namespace TerraRun.Services;
 
-public record RunResponseDto(int Id);
-
-public class RunService
+public class RunService : IRunService
 {
     private readonly HttpClient _httpClient;
-    private const string BaseUrl = "http://10.0.2.2:5134/api/Runs/";
 
     public RunService()
     {
-        _httpClient = new  HttpClient();
+        _httpClient = new HttpClient 
+        { 
+            BaseAddress = new Uri("http://10.0.2.2:5134/api/Runs/") 
+        };
     }
 
     public async Task<int?> StartRun(int userId)
     {
-        var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}start", userId);
+        var response = await _httpClient.PostAsJsonAsync("start", userId);
         if (response.IsSuccessStatusCode)
         {
             var run = await response.Content.ReadFromJsonAsync<RunResponseDto>();
@@ -24,15 +25,16 @@ public class RunService
         }
         return null;
     }
+
     public async Task SavePoint(int runId, double lat, double lon)
     {
-        var dto = new  { Latitude = lat, Longitude = lon };
-        await _httpClient.PostAsJsonAsync($"{BaseUrl}{runId}/point", dto);
+        var dto = new { Latitude = lat, Longitude = lon };
+        await _httpClient.PostAsJsonAsync($"{runId}/point", dto);
     }
 
     public async Task StopRun(int runId)
     {
-        await _httpClient.PostAsync($"{BaseUrl}{runId}/stop", null);
+        await _httpClient.PostAsync($"{runId}/stop", null);
     }
 
     public async Task<CaptureResponse?> CaptureCell(int runId, double lat, double lon)
@@ -40,17 +42,16 @@ public class RunService
         try
         {
             var dto = new { Latitude = lat, Longitude = lon };
-            var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}{runId}/capture", dto);
+            var response = await _httpClient.PostAsJsonAsync($"{runId}/capture", dto);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<CaptureResponse>();
-                return result;
+                return await response.Content.ReadFromJsonAsync<CaptureResponse>();
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[SERVICE ERROR] {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[SERVICE ERROR] CaptureCell: {ex.Message}");
         }
         return null;
     }
@@ -59,12 +60,12 @@ public class RunService
     {
         try
         {
-            var response = await _httpClient.GetFromJsonAsync<List<CapturedCellDto>>($"{BaseUrl}captured-cells");
-            return response ?? new List<CapturedCellDto>();
+            return await _httpClient.GetFromJsonAsync<List<CapturedCellDto>>("captured-cells") 
+                   ?? new List<CapturedCellDto>();
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error fetching all cells: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[SERVICE ERROR] GetAllCapturedCells: {ex.Message}");
             return new List<CapturedCellDto>();
         }
     }
@@ -73,41 +74,12 @@ public class RunService
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<UserStatsDto>($"{BaseUrl}stats/{userId}");
+            return await _httpClient.GetFromJsonAsync<UserStatsDto>($"stats/{userId}");
         }
         catch (Exception e)
         {
-            System.Diagnostics.Debug.WriteLine($"[SERVICE ERROR] {e.Message}");
+            System.Diagnostics.Debug.WriteLine($"[SERVICE ERROR] GetStats: {e.Message}");
         }
         return null;
     }
 }
-
-public record CaptureResponse(string CellId, int Owner, List<BoundaryPoint> Boundary);
-
-public record BoundaryPoint(double Lat, double Lon);
-
-public class CapturedCellDto
-{
-    public int OwnerUserId { get; set; }
-    public List<BoundaryPoint> Boundary { get; set; }
-}
-public class UserStatsDto {
-    public int CellsCount { get; set; }
-    public double TotalAreaMeters { get; set; }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

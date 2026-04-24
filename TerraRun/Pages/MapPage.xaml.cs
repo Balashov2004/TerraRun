@@ -3,6 +3,7 @@ using TerraRun.Services;
 using Mapsui.Nts;
 using Mapsui.Styles;
 using NetTopologySuite.Geometries;
+using TerraRun.Models;
 using Color = Mapsui.Styles.Color;
 
 namespace TerraRun.Pages;
@@ -13,7 +14,7 @@ public partial class MapPage
     private int? _currentRunId;
     private readonly RunService _runService = new();
     private readonly Mapsui.Layers.WritableLayer _routeLayer = new();
-
+    
     public MapPage()
     {
         InitializeComponent();
@@ -38,6 +39,7 @@ public partial class MapPage
     {
         while (true)
         {
+            // var activity = await ActivityService.
             try
             {
                 var location = await Geolocation.Default.GetLocationAsync(

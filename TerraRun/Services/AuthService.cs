@@ -1,44 +1,56 @@
-﻿
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
+using TerraRun.Interfaces;
+using TerraRun.Models;
 
 namespace TerraRun.Services;
 
-public class AuthService
+public class AuthService : IAuthService
 {
     private readonly HttpClient _httpClient;
 
-    private const string BaseUrl = "http://10.0.2.2:5134/api/Auth/";
-
     public AuthService()
     {
-        _httpClient = new HttpClient();
+        _httpClient = new HttpClient
+        {
+            BaseAddress = new Uri("http://10.0.2.2:5134/api/Auth/")
+        };
     }
 
-    public async Task<UserResponseDto> Register(string username, string email, string password)
+    public async Task<UserResponseDto?> Register(string username, string email, string password)
     {
-        var data = new { Username = username, Email = email, Password = password };
-        var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}register", data);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            return await response.Content.ReadFromJsonAsync<UserResponseDto>();
+            var request = new RegisterRequest(username, email, password);
+            var response = await _httpClient.PostAsJsonAsync("register", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<UserResponseDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AUTH ERROR] Register: {ex.Message}");
         }
         return null;
     }
 
     public async Task<UserResponseDto?> Login(string username, string password)
     {
-        var data = new {Username = username, Password = password};
-        var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}login",  data);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            return await response.Content.ReadFromJsonAsync<UserResponseDto>();
+            var request = new LoginRequest(username, password);
+            var response = await _httpClient.PostAsJsonAsync("login", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<UserResponseDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AUTH ERROR] Login: {ex.Message}");
         }
         return null;
     }
-}
-public class UserResponseDto
-{
-    public int Id { get; set; }
-    public string UserName { get; set; }
-    public string Email {get; set;}
 }
