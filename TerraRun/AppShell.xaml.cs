@@ -8,7 +8,11 @@ public partial class AppShell : Shell
         InitializeComponent();
         try 
         {
+            Routing.RegisterRoute(nameof(MenuPage), typeof(MenuPage));
             Routing.RegisterRoute(nameof(ProfilePage), typeof(ProfilePage));
+            Routing.RegisterRoute(nameof(CreateTournamentPage), typeof(CreateTournamentPage));
+            Routing.RegisterRoute(nameof(JoinTournamentPage), typeof(JoinTournamentPage));
+            Routing.RegisterRoute(nameof(MyTournamentsPage), typeof(MyTournamentsPage));
             System.Diagnostics.Debug.WriteLine("[DEBUG] Маршрут ProfilePage успешно зарегистрирован");
         }
         catch (Exception ex) 

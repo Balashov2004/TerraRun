@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
+             x:Class="TerraRun.Pages.CreateTournamentPage"
+             Title="Новый турнир"
+             BackgroundColor="#F5F5F5">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="25" Spacing="15">
+            
+            <Label Text="Название турнира" FontAttributes="Bold" />
+            <Entry x:Name="NameEntry" Placeholder="Например: Битва за Центр" BackgroundColor="White" />
+
+            <Label Text="Дата и время начала" FontAttributes="Bold" Margin="0,10,0,0" />
+            <HorizontalStackLayout Spacing="10">
+                <DatePicker x:Name="StartDatePicker" MinimumDate="{x:Static system:DateTime.Today}" />
+                <TimePicker x:Name="StartTimePicker" />
+            </HorizontalStackLayout>
+
+            <Label Text="Дата и время окончания" FontAttributes="Bold" Margin="0,10,0,0" />
+            <HorizontalStackLayout Spacing="10">
+                <DatePicker x:Name="EndDatePicker" MinimumDate="{x:Static system:DateTime.Today}" />
+                <TimePicker x:Name="EndTimePicker" />
+            </HorizontalStackLayout>
+
+            <Button Text="СОЗДАТЬ ТУРНИР"
+                    Clicked="OnSubmitClicked"
+                    BackgroundColor="#4CAF50"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    HeightRequest="60"
+                    CornerRadius="15"
+                    Margin="0,30,0,0" />
+
+            <Button Text="ОТМЕНА"
+                    Clicked="OnCancelClicked"
+                    BackgroundColor="Transparent"
+                    TextColor="Gray" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -39,7 +39,6 @@ public partial class MapPage
     {
         while (true)
         {
-            // var activity = await ActivityService.
             try
             {
                 var location = await Geolocation.Default.GetLocationAsync(
@@ -181,5 +180,10 @@ public partial class MapPage
     private async void OnProfileClicked(object sender, EventArgs e)
     {
         await Shell.Current.GoToAsync(nameof(ProfilePage));
+    }
+
+    private async void OnMenuClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync(nameof(MenuPage));
     }
 }

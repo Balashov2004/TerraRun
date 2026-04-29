@@ -14,18 +14,33 @@
         <Grid Padding="20" RowDefinitions="Auto, *, Auto" IgnoreSafeArea="False">
     
             <Grid Grid.Row="0" ColumnDefinitions="Auto, *">
-                <Button x:Name="ProfileButton"
-                        Grid.Column="0"
-                        Text="👤"
-                        FontSize="24"
-                        BackgroundColor="#80000000" 
-                        TextColor="White"
-                        WidthRequest="50"
-                        HeightRequest="50"
-                        CornerRadius="25"
-                        HorizontalOptions="Start"
-                        VerticalOptions="Center"
-                        Clicked="OnProfileClicked" />
+                <VerticalStackLayout Grid.Column="0" 
+                                     Spacing="10" 
+                                     Margin="0,10,0,0"
+                                     HorizontalOptions="Start" 
+                                     VerticalOptions="Start">
+        
+                    <Button x:Name="ProfileButton"
+                            Text="👤"
+                            FontSize="24"
+                            BackgroundColor="#80000000" 
+                            TextColor="White"
+                            WidthRequest="50"
+                            HeightRequest="50"
+                            CornerRadius="25"
+                            Clicked="OnProfileClicked" />
+
+                    <Button x:Name="MenuButton"
+                            Text="☰"
+                            FontSize="24"
+                            BackgroundColor="#80000000" 
+                            TextColor="White"
+                            WidthRequest="50"
+                            HeightRequest="50"
+                            CornerRadius="25"
+                            Clicked="OnMenuClicked" />
+                
+                </VerticalStackLayout>
 
                 <Button Grid.Column="1"
                         Text="⚙️" 

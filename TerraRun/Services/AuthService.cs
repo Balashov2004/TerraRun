@@ -12,7 +12,7 @@ public class AuthService : IAuthService
     {
         _httpClient = new HttpClient
         {
-            BaseAddress = new Uri("http://10.0.2.2:5134/api/Auth/")
+            BaseAddress = new Uri("http://10.0.2.2:5000/api/Auth/")
         };
     }
 

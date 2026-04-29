@@ -12,4 +12,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<Run> Runs { get; set; }
     public DbSet<RunPoint> RunPoints { get; set; }
     public DbSet<CapturedCell> CapturedCells { get; set; }
+    public DbSet<Tournament> Tournaments { get; set; }
+    public DbSet<UserTournament> UserTournaments { get; set; }
 }

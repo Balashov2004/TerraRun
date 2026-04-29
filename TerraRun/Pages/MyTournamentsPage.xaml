@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TerraRun.Pages.MyTournamentsPage"
+             Title="Мои турниры">
+
+    <RefreshView x:Name="RefreshView" Refreshing="OnRefreshRequested">
+        <CollectionView x:Name="TournamentsList" Margin="10">
+            <CollectionView.EmptyView>
+                <Label Text="Вы пока не вступили ни в один турнир" 
+                       HorizontalOptions="Center" VerticalOptions="Center" Margin="20"/>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Margin="0,5" Padding="15" CornerRadius="10" HasShadow="True">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold" />
+                            
+                            <HorizontalStackLayout Spacing="10">
+                                <Label Text="Код:" FontAttributes="Italic" TextColor="Gray" />
+                                <Label Text="{Binding JoinCode}" FontAttributes="Bold" TextColor="#2196F3" />
+                            </HorizontalStackLayout>
+                            <Label Text="{Binding StartTime, StringFormat='Начинается: {0:dd.MM HH:mm}'}" 
+                                   FontSize="12" TextColor="DimGray" />
+                            <Label Text="{Binding EndTime, StringFormat='Заканчивается: {0:dd.MM HH:mm}'}" 
+                                   FontSize="12" TextColor="DimGray" />
+                            
+                            <HorizontalStackLayout Spacing="5">
+                                <Label Text="Активен:" FontSize="12"/>
+                                <Label Text="{Binding IsActive}" FontSize="12" FontAttributes="Bold"/>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </RefreshView>
+</ContentPage>
