@@ -1,11 +1,9 @@
-﻿using H3;
-using H3.Extensions;
-using H3.Model;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TerraRun.Api.Data;
 using TerraRun.Api.DTO;
 using TerraRun.Api.Models;
+using TerraRun.Api.Services;
 
 namespace TerraRun.Api.Controllers;
 
@@ -14,10 +12,12 @@ namespace TerraRun.Api.Controllers;
 public class RunsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
-    
-    public RunsController(ApplicationDbContext context)
+    private readonly IGeoCellService _geoCellService;
+
+    public RunsController(ApplicationDbContext context, IGeoCellService geoCellService)
     {
         _context = context;
+        _geoCellService = geoCellService;
     }
 
     [HttpPost("start")]
@@ -60,17 +60,8 @@ public class RunsController : ControllerBase
     [HttpPost("{runId}/capture")]
     public async Task<IActionResult> CapturePoint(int runId, [FromBody] RunDto dto)
     {
-        var latRad = dto.Latitude * (Math.PI / 180.0);
-        var lonRad = dto.Longitude * (Math.PI / 180.0);
-        var point = new GeoCoord(latRad, lonRad);
-        var indexObj = H3Index.FromGeoCoord(point, 12);
-        var h3IndexString = indexObj.ToString();
-        var boundary = indexObj.GetCellBoundaryVertices()
-            .Select(v => new { 
-                lat = v.Latitude * (180.0 / Math.PI),
-                lon = v.Longitude * (180.0 / Math.PI), 
-            })
-            .ToList();
+        var h3IndexString = _geoCellService.GetCellIndex(dto.Latitude, dto.Longitude);
+        var boundary = _geoCellService.GetBoundary(h3IndexString);
 
         var run = await _context.Runs.FindAsync(runId);
         if (run == null) return NotFound("Run not found");
@@ -94,7 +85,7 @@ public class RunsController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
-        return Ok(new { CellId = h3IndexString, Owner = userId, Boundary = boundary });
+        return Ok(new { CellId = h3IndexString, OwnerUserId = userId, Boundary = boundary });
     }
     
     [HttpGet("captured-cells")] 
@@ -107,29 +98,18 @@ public class RunsController : ControllerBase
         var result = cellsFromDb.Select(c => new {
             CellId = c.H3Index,
             c.OwnerUserId,
-            Boundary = GetBoundaryForIndex(c.H3Index)
+            Boundary = _geoCellService.GetBoundary(c.H3Index)
         }).ToList();
 
         return Ok(result);
     }
     
-    private List<object> GetBoundaryForIndex(string h3IndexString)
-    {
-        var indexObj = new H3Index(h3IndexString);
-        return indexObj.GetCellBoundaryVertices()
-            .Select(v => new { 
-                lat = v.Latitude * (180.0 / Math.PI),
-                lon = v.Longitude * (180.0 / Math.PI), 
-            })
-            .ToList<object>();
-    }
-
     [HttpGet("stats/{userId}")]
     public async Task<IActionResult> GetStats(int userId)
     {
         var cellsCount = await _context.CapturedCells
             .CountAsync(c => c.OwnerUserId == userId);
-        var areaCell = H3Index.FromLatLng(new GeoCoord(45, 38), 12).CellAreaInMSquared();
+        const double areaCell = 307.09d;
         var totalArea = areaCell * cellsCount;
         return Ok(new {
             CellsCount = cellsCount, 

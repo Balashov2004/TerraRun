@@ -1,43 +1,38 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
+using TerraRun.Models;
+using TerraRun.Services;
 
 namespace TerraRun.Pages;
 
 public partial class JoinTournamentPage : ContentPage
 {
-    private readonly HttpClient _httpClient;
+    private readonly TournamentsService _tournamentsService;
+
     public JoinTournamentPage()
     {
         InitializeComponent();
-        _httpClient = new HttpClient {BaseAddress = new Uri("http://10.0.2.2:5000/")};
+        _tournamentsService = new TournamentsService();
     }
 
     private async void OnJoinClicked(object? sender, EventArgs e)
     {
         if (string.IsNullOrWhiteSpace(CodeEntry.Text)) return;
         
-        var joinData = new
+        var joinData = new TournamentJoinRequest
         {
-            JoinCode = CodeEntry.Text,
-            UserId = UserSession.LoggedInUserId
+            JoinCode = CodeEntry.Text ?? string.Empty,
+            UserId = UserSession.LoggedInUserId ?? 0
         };
 
-        var response = await _httpClient.PostAsJsonAsync("api/Tournaments/join", joinData);
-        if (response.IsSuccessStatusCode)
+        var message = await _tournamentsService.JoinTournament(joinData);
+        if (!string.IsNullOrWhiteSpace(message))
         {
-            var result = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-            await DisplayAlert("Ура!", result["message"], "OK");
+            await DisplayAlert("Ура!", message, "OK");
             await Shell.Current.GoToAsync("..");
         }
-
         else
         {
-            var error = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-            await DisplayAlert("Ошибка",  error["message"], "OK");
+            await DisplayAlert("Ошибка", "Не удалось вступить в турнир", "OK");
         }
     }
 }

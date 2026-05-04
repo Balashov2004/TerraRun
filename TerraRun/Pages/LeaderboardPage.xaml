@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TerraRun.Pages.LeaderboardPage"
+             Title="Таблица лидеров">
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Заголовок -->
+        <Frame Grid.Row="0" Margin="10" BackgroundColor="#2196F3" CornerRadius="10">
+            <Label Text="Топ игроков по захваченным ячейкам" 
+                   TextColor="White" 
+                   FontAttributes="Bold" 
+                   HorizontalOptions="Center" />
+        </Frame>
+
+        <!-- Список лидеров -->
+        <CollectionView Grid.Row="1" x:Name="LeaderboardList" Margin="10">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10" ColumnDefinitions="40, *, Auto">
+                        <!-- Позиция (1, 2, 3...) -->
+                        <Label Grid.Column="0" Text="{Binding Rank}" 
+                               FontAttributes="Bold" VerticalOptions="Center" />
+                        
+                        <!-- Имя игрока -->
+                        <Label Grid.Column="1" Text="{Binding UserName}" 
+                               FontSize="16" VerticalOptions="Center" />
+                        
+                        <!-- Количество очков/ячеек -->
+                        <Label Grid.Column="2" Text="{Binding CellsCount}" 
+                               TextColor="#4CAF50" FontAttributes="Bold" VerticalOptions="Center" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

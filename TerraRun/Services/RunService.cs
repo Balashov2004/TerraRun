@@ -9,15 +9,12 @@ public class RunService : IRunService
 
     public RunService()
     {
-        _httpClient = new HttpClient 
-        { 
-            BaseAddress = new Uri("http://10.0.2.2:5000/api/Runs/") 
-        };
+        _httpClient = ApiHttpClientProvider.Instance;
     }
 
     public async Task<int?> StartRun(int userId)
     {
-        var response = await _httpClient.PostAsJsonAsync("start", userId);
+        var response = await _httpClient.PostAsJsonAsync("Runs/start", userId);
         if (response.IsSuccessStatusCode)
         {
             var run = await response.Content.ReadFromJsonAsync<RunResponseDto>();
@@ -29,12 +26,12 @@ public class RunService : IRunService
     public async Task SavePoint(int runId, double lat, double lon)
     {
         var dto = new { Latitude = lat, Longitude = lon };
-        await _httpClient.PostAsJsonAsync($"{runId}/point", dto);
+        await _httpClient.PostAsJsonAsync($"Runs/{runId}/point", dto);
     }
 
     public async Task StopRun(int runId)
     {
-        await _httpClient.PostAsync($"{runId}/stop", null);
+        await _httpClient.PostAsync($"Runs/{runId}/stop", null);
     }
 
     public async Task<CaptureResponse?> CaptureCell(int runId, double lat, double lon)
@@ -42,7 +39,7 @@ public class RunService : IRunService
         try
         {
             var dto = new { Latitude = lat, Longitude = lon };
-            var response = await _httpClient.PostAsJsonAsync($"{runId}/capture", dto);
+            var response = await _httpClient.PostAsJsonAsync($"Runs/{runId}/capture", dto);
 
             if (response.IsSuccessStatusCode)
             {
@@ -60,7 +57,7 @@ public class RunService : IRunService
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<List<CapturedCellDto>>("captured-cells") 
+            return await _httpClient.GetFromJsonAsync<List<CapturedCellDto>>("Runs/captured-cells")
                    ?? new List<CapturedCellDto>();
         }
         catch (Exception ex)
@@ -74,7 +71,7 @@ public class RunService : IRunService
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<UserStatsDto>($"stats/{userId}");
+            return await _httpClient.GetFromJsonAsync<UserStatsDto>($"Runs/stats/{userId}");
         }
         catch (Exception e)
         {

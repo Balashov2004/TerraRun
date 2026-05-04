@@ -1,37 +1,32 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
+using TerraRun.Models;
+using TerraRun.Services;
 
 namespace TerraRun.Pages;
 
 public partial class MyTournamentsPage : ContentPage
 {
-    private HttpClient _httpClient;
+    private readonly TournamentsService _tournamentsService;
+
     public MyTournamentsPage()
     {
         InitializeComponent();
-        _httpClient = new HttpClient { BaseAddress = new Uri("http://10.0.2.2:5000/") };
+        _tournamentsService = new TournamentsService();
     }
 
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        LoadTournaments();
+        _ = LoadTournaments();
     }
 
     private async Task LoadTournaments()
     {
         try
         {
-            var tournaments = await _httpClient
-                .GetFromJsonAsync<List<TournamentViewModel>>
-                    ($"api/Tournaments/my/{UserSession.LoggedInUserId}");
+            var tournaments = await _tournamentsService.GetMyTournaments(UserSession.LoggedInUserId ?? 0);
             TournamentsList.ItemsSource = tournaments;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             await DisplayAlert("Ошибка", "Не удалось загрузить список", "OK");
         }
@@ -45,13 +40,19 @@ public partial class MyTournamentsPage : ContentPage
     {
         await LoadTournaments();
     }
+
+    private async void OnTournamentClick(object sender, TappedEventArgs e)
+    {
+        if (e.Parameter is TournamentViewModel selectedTournament)
+        {
+
+            var navigationParameter = new Dictionary<string, object>
+            {
+                { "Tournament", selectedTournament }
+            };
+
+            await Shell.Current.GoToAsync(nameof(TournamentMapPage), navigationParameter);
+        }
+    }
 }
 
-public class TournamentViewModel
-{
-    public string Name { get; set; }
-    public string JoinCode { get; set; }
-    public DateTime StartTime { get; set; }
-    public DateTime EndTime { get; set; }
-    public bool IsActive { get; set; }
-}

@@ -1,21 +1,17 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
+using TerraRun.Models;
+using TerraRun.Services;
 
 namespace TerraRun.Pages;
 
 public partial class CreateTournamentPage : ContentPage
 {
-    private readonly HttpClient _httpClient;
-    
+    private readonly TournamentsService _tournamentsService;
+
     public CreateTournamentPage()
     {
         InitializeComponent();
-        _httpClient = new HttpClient {BaseAddress = new Uri("http://10.0.2.2:5000/")};
+        _tournamentsService = new TournamentsService();
     }
 
 
@@ -34,7 +30,7 @@ public partial class CreateTournamentPage : ContentPage
             await DisplayAlert("Ошибка", "Турнир не может закончиться раньше, чем начнется", "OK");
             return;
         }
-        var tournamentDto = new
+        var tournamentDto = new TournamentCreateRequest
         {
             Name = NameEntry.Text,
             StartTime = start.ToUniversalTime(),
@@ -42,19 +38,15 @@ public partial class CreateTournamentPage : ContentPage
         };
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/Tournaments/create", tournamentDto);
-            if (response.IsSuccessStatusCode)
+            var message = await _tournamentsService.CreateTournament(tournamentDto);
+            if (!string.IsNullOrWhiteSpace(message))
             {
-                var result = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-                await DisplayAlert("Успех", $"Сохрани {result["message"]}", "OK");
+                await DisplayAlert("Успех", message, "OK");
                 await Shell.Current.GoToAsync("..");
             }
             else
             {
-                var errorBody = await response.Content.ReadAsStringAsync();
-    
-                // Выводим этот текст — там будет написано, какое поле не нравится
-                await DisplayAlert("Детали ошибки", errorBody, "OK");
+                await DisplayAlert("Ошибка", "Не удалось создать турнир", "OK");
             }
         }
         catch (Exception ex)

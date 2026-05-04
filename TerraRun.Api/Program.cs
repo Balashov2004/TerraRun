@@ -1,6 +1,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using TerraRun.Api.Data;
+using TerraRun.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<IGeoCellService, GeoCellService>();
+builder.Services.AddScoped<ITournamentService, TournamentService>();
 
 var app = builder.Build();
 
